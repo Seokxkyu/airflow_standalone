@@ -49,6 +49,7 @@ with DAG(
         task_id="to.tmp",
         bash_command="""
             echo "to.tmp"
+            bash  {{ var.value.SH_HOME }}/csv2mysql.sh
         """
     )
 
