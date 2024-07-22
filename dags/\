@@ -58,11 +58,9 @@ with DAG(
         task_id="to.tmp",
         bash_command="""
             echo "to.tmp"
-            bash {{ var.value.SH_HOME }}/csv2mysql.sh
+            bash  {{ var.value.SH_HOME }}/csv2mysql.sh
         """
     )
-
-    # bash {{ var.value.SH_HOME }}/csv2mysql.sh /var/lib/mysql-files/{{ ds_nodash }}csv.csv
 
     task_to_base = BashOperator(
         task_id="to.base",
