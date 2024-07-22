@@ -29,6 +29,7 @@ with DAG(
         # bash_command='bash /home/kyuseok00/airflow/dags/check.sh {{ ds_nodash }}'
     )
 
+
     task_to_csv = BashOperator(
         task_id="to.csv",
         bash_command="""
@@ -36,11 +37,11 @@ with DAG(
 
             U_PATH=~/data/count/{{ds_nodash}}/count.log
             CSV_PATH=~/data/csv/{{ds_nodash}}
-            
+            CSV_FILE=~/data/csv/{{ds_nodash}}/csv.csv
+
             mkdir -p $CSV_PATH
 
-            cat ${U_PATH} | awk '{print "{{ds}}," $2 "," $1}' > ${CSV_PATH}/csv.csv
-
+            cat $U_PATH | awk '{print "^{{ds}}^,^" $2 "^,^" $1 "^"}' > ${CSV_FILE}
             echo $CSV_PATH
         """
     )
@@ -48,9 +49,9 @@ with DAG(
     task_create_table = BashOperator(
         task_id="create.table",
         bash_command="""
-        SQL={{ var.value.SQL_PATH }}/create_db_table.sql
-        echo "SQL_PATH=$SQL"
-        MYSQL_PWD='{{ var.value.DB_PASSWD }}' mysql -u root < "$SQL"
+            SQL={{ var.value.SQL_PATH }}/create_db_table.sql
+            echo "SQL_PATH=$SQL"
+            MYSQL_PWD='{{ var.value.DB_PASSWD }}' mysql -u root < "$SQL"
         """
     )
 
@@ -58,7 +59,9 @@ with DAG(
         task_id="to.tmp",
         bash_command="""
             echo "to.tmp"
-            bash {{ var.value.SH_HOME }}/csv2mysql.sh
+            CSV_FILE=~/data/csv/{{ds_nodash}}/csv.csv
+            echo $CSV_FILE
+            bash {{ var.value.SH_HOME }}/csv2mysql.sh $CSV_FILE
         """
     )
 
