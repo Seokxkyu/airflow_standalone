@@ -26,7 +26,6 @@ with DAG(
     task_check = BashOperator(
         task_id="check.done",
         bash_command='bash {{ var.value.CHECK_SH }} ~/data/done/{{ ds_nodash }}/_DONE'
-        # bash_command='bash /home/kyuseok00/airflow/dags/check.sh {{ ds_nodash }}'
     )
 
 
