@@ -71,9 +71,7 @@ with DAG(
         task_id="to.base",
         bash_command="""
             echo "to.base"
-            SQL={{ var.value.SQL_PATH }}/temp2base.sql
-            echo "SQL_PATH=$SQL"
-            MYSQL_PWD='{{ var.value.DB_PASSWD }}' mysql -u root < $SQL 
+            bash {{ var.value.SH_HOME }}/tmp2bash.sh {{ ds }}
         """,
     )
 
