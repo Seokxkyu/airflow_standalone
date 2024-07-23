@@ -61,7 +61,7 @@ with DAG(
             echo "to.tmp"
             CSV_FILE=~/data/csv/{{ds_nodash}}/csv.csv
             echo $CSV_FILE
-            bash {{ var.value.SH_HOME }}/csv2mysql.sh $CSV_FILE
+            bash {{ var.value.SH_HOME }}/csv2mysql.sh $CSV_FILE {{ ds }}
         """
     )
 
@@ -71,7 +71,10 @@ with DAG(
         task_id="to.base",
         bash_command="""
             echo "to.base"
-        """
+            SQL={{ var.value.SQL_PATH }}/temp2base.sql
+            echo "SQL_PATH=$SQL"
+            MYSQL_PWD='{{ var.value.DB_PASSWD }}' mysql -u root < $SQL 
+        """,
     )
 
     task_err = BashOperator(
