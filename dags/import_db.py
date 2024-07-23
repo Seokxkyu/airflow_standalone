@@ -25,7 +25,7 @@ with DAG(
 
     task_check = BashOperator(
         task_id="check.done",
-        bash_command='bash {{ var.value.CHECK_SH }} {{ ds_nodash }}'
+        bash_command='bash {{ var.value.CHECK_SH }} ~/data/done/{{ ds_nodash }}/_DONE'
         # bash_command='bash /home/kyuseok00/airflow/dags/check.sh {{ ds_nodash }}'
     )
 
@@ -86,6 +86,8 @@ with DAG(
     task_done = BashOperator(
         task_id="make.done",
         bash_command="""
+            mkdir -p ~/data/db_done/{{ ds_nodash }}
+            touch ~/data/db_done/{{ ds_nodash }}/_DONE
         """
     )
 
