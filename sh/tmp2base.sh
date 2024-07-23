@@ -5,11 +5,9 @@ DT=$1
 user="root"
 
 MYSQL_PWD='qwer123' mysql --local-infile=1 -u"$user" <<EOF
-USE history_db;
-
 DELETE FROM history_db.cmd_usage WHERE dt='${DT}';
 
-INSERT INTO cmd_usage
+INSERT INTO history_db.cmd_usage
 SELECT 
 	CASE WHEN dt LIKE '%-%-%'
 	THEN STR_TO_DATE(dt, '%Y-%m-%d')
@@ -20,7 +18,7 @@ SELECT
 	THEN CAST(cnt AS UNSIGNED)
 	ELSE -1
 	END AS cnt
-FROM tmp_cmd_usage
+FROM history_db.tmp_cmd_usage
 WHERE dt = '${DT}'
 ;
 EOF
