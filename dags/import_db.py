@@ -71,7 +71,7 @@ with DAG(
         task_id="to.base",
         bash_command="""
             echo "to.base"
-            bash {{ var.value.SH_HOME }}/tmp2bash.sh {{ ds }}
+            bash {{ var.value.SH_HOME }}/tmp2base.sh {{ ds }}
         """,
     )
 
