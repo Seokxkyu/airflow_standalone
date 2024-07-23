@@ -27,8 +27,9 @@ with DAG(
     task_check = BashOperator(
         task_id="check.done",
         bash_command="""
-            echo "check done",
-            bash {{ var.value.CHECK_SH }} ~/data/db_done/{{ ds_nodash }}/_DONE
+            echo "check done"
+            DONE_FILE={{ var.value.IMPORT_DONE_PATH }}/{{ ds_nodash }}/_DONE
+            bash {{ var.value.CHECK_SH }} $DONE_FILE
         """
     )
 

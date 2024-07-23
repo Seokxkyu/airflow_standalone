@@ -1,11 +1,11 @@
 #!/bin/bash
 
-DONE_PATH=$1
+DONE_PATH_FILE=$1
 
 echo "check"
 
 # 파일 존재 여부 확인
-if [[ -e "$DONE_PATH" ]]; then
+if [[ -e "$DONE_PATH_FILE" ]]; then
     figlet "Let's move on"
     exit 0
 else

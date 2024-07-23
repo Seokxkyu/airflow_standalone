@@ -86,10 +86,20 @@ with DAG(
     task_done = BashOperator(
         task_id="make.done",
         bash_command="""
-            mkdir -p ~/data/db_done/{{ ds_nodash }}
-            touch ~/data/db_done/{{ ds_nodash }}/_DONE
+            figlet "make.done.start"
+
+            DONE_PATH={{ var.value.IMPORT_DONE_PATH }}/{{ ds_nodash }}
+            mkdir -p $DONE_PATH
+            echo "IMPORT_DONE_PATH=$DONE_PATH"
+            touch $DONE_PATH/_DONE
+
+            figlet "make.done.end"
         """
     )
+
+    # echo "make.done"
+    # mkdir -p ~/data/db_done/{{ ds_nodash }}
+    # touch ~/data/db_done/{{ ds_nodash }}/_DONE
 
     task_end = EmptyOperator(task_id='end', trigger_rule="all_done")
     task_start = EmptyOperator(task_id='start')
