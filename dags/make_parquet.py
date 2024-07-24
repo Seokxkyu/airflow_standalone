@@ -37,7 +37,23 @@ with DAG(
         task_id="to.parquet",
         bash_command="""
             echo "to.parquet"
+            PYTHON_PATH=~/airflow/py/
+            READ_PATH=~/data/csv/{{ds_nodash}}/csv.csv
+            SAVE_PATH=~/data/parquet/{{ds_nodash}}/
+            PARQUET_FILE=$SAVE_PATH/history.parquet
+
+            mkdir -p $SAVE_PATH
+
+            python $PYTHON_PATH/csv2parquet.py $READ_PATH $PARQUET_FILE
         """,
+    )
+
+    task_err = BashOperator(
+        task_id="err.report",
+        bash_command="""
+            echo "err report"
+        """,
+        trigger_rule="one_failed"
     )
 
     task_done = BashOperator(
@@ -46,5 +62,8 @@ with DAG(
             echo "make.done"
         """,
     )
+    
+    task_start >> task_check
+    task_check >> task_to_parquet >> task_done >> task_end
+    task_check >> task_err >> task_end
 
-    task_start >> task_check >> task_to_parquet >> task_done >> task_end
