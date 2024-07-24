@@ -13,7 +13,6 @@ for column in columns:
 # 결측치 처리
 df['cnt'] = pd.to_numeric(df['cnt'], errors='coerce')
 df['cnt'] = df['cnt'].fillna(0).astype(int)
-df['cnt'] = df['cnt'].astype(int)
 # df.to_parquet(SAVE_PATH)
 
 df.to_parquet(f'{SAVE_PATH}', partition_cols=['dt'])
