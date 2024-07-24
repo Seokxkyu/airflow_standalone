@@ -40,11 +40,9 @@ with DAG(
 
             PYTHON_PATH=~/airflow/py/
             READ_PATH=~/data/csv/{{ds_nodash}}/csv.csv
-            SAVE_PATH=~/data/parquet/{{ds_nodash}}/
-            PARQUET_FILE=$SAVE_PATH/parquet.parquet
+            SAVE_PATH=~/data/parquet/
             
-            mkdir -p $SAVE_PATH
-            python $PYTHON_PATH/csv2parquet.py $READ_PATH $PARQUET_FILE
+            python $PYTHON_PATH/csv2parquet.py $READ_PATH $SAVE_PATH
         """,
     )
 
