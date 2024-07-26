@@ -17,8 +17,8 @@ with DAG(
         'retry_delay': timedelta(seconds=3)
     },
     description='movie',
-    schedule="10 4 * * *",
-    start_date=datetime(2024, 7, 12),
+    schedule="10 2 * * *",
+    start_date=datetime(2024, 7, 24),
     catchup=True,
     tags=['movie', 'data', 'pandas'],
 ) as dag:
@@ -27,6 +27,8 @@ with DAG(
         task_id="get.data",
         bash_command="""
             echo "get data"
+
+            READ_PATH=
         """
     )
 
