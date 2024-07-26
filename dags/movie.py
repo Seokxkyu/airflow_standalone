@@ -18,7 +18,7 @@ with DAG(
     },
     description='movie',
     schedule="10 4 * * *",
-    start_date=datetime(2024, 7, 26),
+    start_date=datetime(2024, 7, 12),
     catchup=True,
     tags=['movie', 'data', 'pandas'],
 ) as dag:
