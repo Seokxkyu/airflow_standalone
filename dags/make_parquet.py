@@ -1,12 +1,14 @@
 from datetime import datetime, timedelta
 from textwrap import dedent
 
-# The DAG object; we'll need this to instantiate a DAG
 from airflow import DAG
-
-# Operators; we need this to operate!
 from airflow.operators.bash import BashOperator
 from airflow.operators.empty import EmptyOperator
+
+def gen_emp(id, rule="all_success"):
+    op = EmptyOperator(task_id=id, trigger_rule=rule)
+    return op
+
 with DAG(
     'make_parquet',
     default_args={
@@ -21,9 +23,6 @@ with DAG(
     tags=['parquet', 'bash', 'shop', 'csv', 'db', 'history'],
 ) as dag:
     
-    task_start = EmptyOperator(task_id='start')
-    task_end = EmptyOperator(task_id='end', trigger_rule="all_done")
-
     task_check = BashOperator(
         task_id="check.done",
         bash_command="""
@@ -61,7 +60,9 @@ with DAG(
         """,
     )
     
+    task_start = gen_emp('start')
+    task_end = gen_emp('end', 'all_done')
+
     task_start >> task_check
     task_check >> task_to_parquet >> task_done >> task_end
     task_check >> task_err >> task_end
-
