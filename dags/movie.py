@@ -5,10 +5,7 @@ from airflow import DAG
 from airflow.operators.bash import BashOperator
 from airflow.operators.empty import EmptyOperator
 
-from airflow.operators.python import (
-        PythonOperator, 
-        PythonVirtualenvOperator
-)
+from airflow.operators.python import PythonOperator, PythonVirtualenvOperator
 
 from pprint import pprint
 
