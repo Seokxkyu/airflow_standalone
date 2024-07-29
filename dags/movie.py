@@ -5,7 +5,11 @@ from airflow import DAG
 from airflow.operators.bash import BashOperator
 from airflow.operators.empty import EmptyOperator
 
-from airflow.operators.python import PythonOperator, PythonVirtualenvOperator
+from airflow.operators.python import (
+        PythonOperator, 
+        PythonVirtualenvOperator,
+        BranchPythonOperator,
+)
 
 from pprint import pprint
 
@@ -52,6 +56,21 @@ with DAG(
         print("::endgroup::")
         return "Whatever you return gets printed in the logs"
 
+    def branch_func(**kwargs):
+        ld = kwargs['ds_nodash']
+        import os
+        if os.path.exists(f'~/tmp/test_parquet/load_dt={ld}'):
+            return rm_dir
+        else:
+            return get_data
+
+
+    branch_op = BranchPythonOperator(
+            task_id="branch_op",
+            python_callable=branch_func,
+    )
+
+
     run_this = PythonOperator(
             task_id="print_the_context", 
             python_callable=print_context,
@@ -71,9 +90,18 @@ with DAG(
         """,
     )
 
+    rm_dir = BashOperator(
+        task_id="rm_dir",
+        bash_command="rm -rf ~/tmp/test_parquet/load_dt={{ ds_nodash }}",
+    )
+
     
     task_start = gen_emp('start')
     task_end = gen_emp('end', 'all_done')
+    
+    task_start >> branch_op
+    branch_op >> rm_dir
+    branch_op >> get_data
 
-    task_start >> get_data >> save_data >> task_end
-    task_start >> run_this >> task_end
+    get_data >> save_data >> task_end
+    rm_dir >> get_data
