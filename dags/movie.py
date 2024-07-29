@@ -52,11 +52,9 @@ with DAG(
         print("::endgroup::")
         return "Whatever you return gets printed in the logs"
 
-    run_this = PythonVirtualenvOperator(
+    run_this = PythonOperator(
             task_id="print_the_context", 
             python_callable=print_context,
-            requirements=["git+https://github.com/Seokxkyu/mov.git@0.2/api"],
-            system_site_packages=False,
     )
 
     get_data = PythonVirtualenvOperator(
