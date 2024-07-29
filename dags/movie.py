@@ -62,7 +62,7 @@ with DAG(
             system_site_packages=False,
     )
 
-    get_data = PythonVirtualenvOperator(
+    get_data = PythonOperator(
             task_id="get_data",
             python_callable=get_data
     )
