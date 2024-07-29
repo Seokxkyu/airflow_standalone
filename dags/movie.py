@@ -33,9 +33,12 @@ with DAG(
         print(f"ds_nodash ==> {kwargs['ds_nodash']}")
         print(f"kwargs type ==> {type(kwargs)}")
         print("=" * 20)
-        from mov.api.call import get_key
+        from mov.api.call import get_key, save2df
         key = get_key()
         print(f"MOVIE_API_KEY ==> {key}")
+        YYYYMMDD = kwargs['ds_nodash']
+        df = save2df(YYYYMMDD)
+        print(df.head(5))
 
     def print_context(ds=None, **kwargs):
         """Print the Airflow context and ds variable from the context."""
