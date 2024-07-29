@@ -59,9 +59,11 @@ with DAG(
             system_site_packages=False,
     )
 
-    get_data = PythonOperator(
+    get_data = PythonVirtualenvOperator(
             task_id="get_data",
-            python_callable=get_data
+            python_callable=get_data,
+            requirements=["git+https://github.com/Seokxkyu/mov.git@0.2/api"],
+            system_site_packages=False,
     )
 
     save_data = BashOperator(
