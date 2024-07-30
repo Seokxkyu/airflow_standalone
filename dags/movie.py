@@ -31,77 +31,77 @@ with DAG(
     tags=['movie', 'data', 'pandas'],
 ) as dag:
     
-    def get_data(ds, **kwargs):
-        print(ds)
-        print(kwargs)
-        print("=" * 20)
-        print(f"ds_nodash ==> {kwargs['ds_nodash']}")
-        print(f"kwargs type ==> {type(kwargs)}")
-        print("=" * 20)
+    def get_data(ds_nodash):
         from mov.api.call import get_key, save2df
         key = get_key()
-        print(f"MOVIE_API_KEY ==> {key}")
-        YYYYMMDD = kwargs['ds_nodash']
-        df = save2df(YYYYMMDD)
+        df = save2df(ds_nodash)
         print(df.head(5))
 
-    def print_context(ds=None, **kwargs):
-        """Print the Airflow context and ds variable from the context."""
-        print("::group::All kwargs")
-        pprint(kwargs)
-        print(kwargs)
-        print("::endgroup::")
-        print("::group::Context variable ds")
-        print(ds)
-        print("::endgroup::")
-        return "Whatever you return gets printed in the logs"
-
-    def branch_func(**kwargs):
-        ld = kwargs['ds_nodash']
+    def branch_func(ds_nodash):
         import os
-        if os.path.exists(f'~/tmp/test_parquet/load_dt={ld}'):
+        home_dir = os.path.expanduser("~")
+        # path = f'{home_dir}/tmp/test_parquet/load_dt{ld}'
+        path = os.path.join(home_dir, f'tmp/test_parquet/load_dt={ds_nodash}')
+        if os.path.exists(path):    
             return "rm_dir"
         else:
-            return "get_data"
-
+            return "get_data", "echo_task"
+    
+    def save_data():
+        from mov.api.call import get_key
+        key = get_key()
+        print("*" * 30)
+        print(key)
+        print("*" * 30)
 
     branch_op = BranchPythonOperator(
-            task_id="branch_op",
-            python_callable=branch_func,
-    )
-
-
-    run_this = PythonOperator(
-            task_id="print_the_context", 
-            python_callable=print_context,
+        task_id="branch_op",
+        python_callable=branch_func,
     )
 
     get_data = PythonVirtualenvOperator(
-            task_id="get_data",
-            python_callable=get_data,
-            requirements=["git+https://github.com/Seokxkyu/mov.git@0.2/api"],
-            system_site_packages=False,
+        task_id="get_data",
+        python_callable=get_data,
+        requirements=["git+https://github.com/Seokxkyu/mov.git@0.2/api"],
+        system_site_packages=False,
+        trigger_rule='all_done',
+        venv_cache_path='/home/kyuseok00/tmp/air_venv/get_data'
     )
-
-    save_data = BashOperator(
+    
+    save_data = PythonVirtualenvOperator(
         task_id="save_data",
-        bash_command="""
-            echo "save data"
-        """,
+        python_callable=save_data,
+        system_site_packages=False,
+        trigger_rule='one_success',
+        venv_cache_path='/home/kyuseok00/tmp/air_venv/get_data'
     )
 
     rm_dir = BashOperator(
         task_id="rm_dir",
-        bash_command="rm -rf ~/tmp/test_parquet/load_dt={{ ds_nodash }}",
+        bash_command="rm -rf ~/tmp/test_parquet/load_dt={{ ds_nodash }}"
     )
 
+
+    echo_task = BashOperator(
+        task_id="echo_task",
+        bash_command="echo 'task'"
+    )
     
     task_start = gen_emp('start')
     task_end = gen_emp('end', 'all_done')
     
+    join_task = BashOperator(
+        task_id='join',
+        bash_command="exit 1",
+        trigger_rule='one_success'
+    )
+
     task_start >> branch_op
-    branch_op >> rm_dir
+    task_start >> join_task >> save_data
+
+    branch_op >> rm_dir >> get_data
+    branch_op >> echo_task >> save_data
     branch_op >> get_data
 
     get_data >> save_data >> task_end
-    rm_dir >> get_data
+
