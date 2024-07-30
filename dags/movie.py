@@ -60,9 +60,9 @@ with DAG(
         ld = kwargs['ds_nodash']
         import os
         if os.path.exists(f'~/tmp/test_parquet/load_dt={ld}'):
-            return rm_dir
+            return "rm_dir"
         else:
-            return get_data
+            return "get_data"
 
 
     branch_op = BranchPythonOperator(
