@@ -47,14 +47,16 @@ with DAG(
         else:
             return "get_data", "echo_task"
     
-    def save_data():
-        from mov.api.call import get_key, echo
-        key = get_key()
-        msg = echo("hello")
+    def save_data(ds_nodash):
+        from mov.api.call import apply_type2df
+        df = apply_type2df(load_dt=ds_nodash)
+        print(df.head(10))
         print("*" * 30)
-        print(key)
-        print(msg)
-        print("*" * 30)
+        print(df.dtypes)
+        g = df.groupby('openDt')
+        sum_df = g.agg({'audiCnt':'sum'}).reset_index()
+        print(sum_df)
+
 
     branch_op = BranchPythonOperator(
         task_id="branch_op",
@@ -67,7 +69,7 @@ with DAG(
         requirements=["git+https://github.com/Seokxkyu/mov.git@0.3/api"],
         system_site_packages=False,
         trigger_rule='all_done',
-        venv_cache_path='/home/kyuseok00/tmp/air_venv/get_data'
+        # venv_cache_path='/home/kyuseok00/tmp/air_venv/get_data'
     )
     
     save_data = PythonVirtualenvOperator(
@@ -76,7 +78,6 @@ with DAG(
         requirements=["git+https://github.com/Seokxkyu/mov.git@0.3/api"],
         system_site_packages=False,
         trigger_rule='one_success',
-        venv_cache_path='/home/kyuseok00/tmp/air_venv/get_data'
     )
 
     rm_dir = BashOperator(
