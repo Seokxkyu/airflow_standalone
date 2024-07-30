@@ -48,10 +48,12 @@ with DAG(
             return "get_data", "echo_task"
     
     def save_data():
-        from mov.api.call import get_key
+        from mov.api.call import get_key, echo
         key = get_key()
+        msg = echo("hello")
         print("*" * 30)
         print(key)
+        print(msg)
         print("*" * 30)
 
     branch_op = BranchPythonOperator(
@@ -62,7 +64,7 @@ with DAG(
     get_data = PythonVirtualenvOperator(
         task_id="get_data",
         python_callable=get_data,
-        requirements=["git+https://github.com/Seokxkyu/mov.git@0.2/api"],
+        requirements=["git+https://github.com/Seokxkyu/mov.git@0.3/api"],
         system_site_packages=False,
         trigger_rule='all_done',
         venv_cache_path='/home/kyuseok00/tmp/air_venv/get_data'
@@ -71,6 +73,7 @@ with DAG(
     save_data = PythonVirtualenvOperator(
         task_id="save_data",
         python_callable=save_data,
+        requirements=["git+https://github.com/Seokxkyu/mov.git@0.3/api"],
         system_site_packages=False,
         trigger_rule='one_success',
         venv_cache_path='/home/kyuseok00/tmp/air_venv/get_data'
