@@ -100,6 +100,7 @@ with DAG(
     )
     
     get_start = EmptyOperator(task_id='get_started')
+    get_end = EmptyOperator(task_id='get_end')
 
     start = EmptyOperator(task_id='start')
     end = EmptyOperator(task_id='end')
@@ -110,12 +111,13 @@ with DAG(
     nation_f = EmptyOperator(task_id='nation_f') # 외국 영화 
 
     start >> branch_op
-    start >> join_task >> save_data
+    start >> join_task >> get_start
 
     branch_op >> rm_dir >> get_start
     get_start >> [get_data, multi_y, multi_n, nation_k, nation_f]
-    branch_op >> echo_task >> save_data
+    branch_op >> echo_task >> get_start
     branch_op >> get_start >> [get_data, multi_y, multi_n, nation_k, nation_f]
-
-    [get_data, multi_y, multi_n, nation_k, nation_f] >> save_data >> end
+    
+    [get_data, multi_y, multi_n, nation_k, nation_f] >> get_end 
+    get_end >> save_data >> end
 
