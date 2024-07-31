@@ -48,7 +48,7 @@ with DAG(
         if os.path.exists(path):    
             return "rm_dir"
         else:
-            return "get_data", "echo_task"
+            return "get_start", "echo_task"
     
     def save_data(ds_nodash):
         from mov.api.call import apply_type2df
@@ -60,10 +60,10 @@ with DAG(
         sum_df = g.agg({'audiCnt':'sum'}).reset_index()
         print(sum_df)
 
-    join_task = BashOperator(
-        task_id='join',
+    throw_err = BashOperator(
+        task_id='throw_err',
         bash_command="exit 1",
-        trigger_rule='one_success'
+        trigger_rule='all_done'
     )
 
     branch_op = BranchPythonOperator(
@@ -76,7 +76,7 @@ with DAG(
         python_callable=get_data,
         requirements=["git+https://github.com/Seokxkyu/mov.git@0.3/api"],
         system_site_packages=False,
-        trigger_rule='all_done',
+        # trigger_rule='all_done',
         # venv_cache_path='/home/kyuseok00/tmp/air_venv/get_data'
     )
     
@@ -85,7 +85,6 @@ with DAG(
         python_callable=save_data,
         requirements=["git+https://github.com/Seokxkyu/mov.git@0.3/api"],
         system_site_packages=False,
-        trigger_rule='one_success',
     )
 
     rm_dir = BashOperator(
@@ -99,9 +98,6 @@ with DAG(
         bash_command="echo 'task'"
     )
     
-    get_start = EmptyOperator(task_id='get_started')
-    get_end = EmptyOperator(task_id='get_end')
-
     start = EmptyOperator(task_id='start')
     end = EmptyOperator(task_id='end')
 
@@ -109,15 +105,21 @@ with DAG(
     multi_n = EmptyOperator(task_id='multi_n')  
     nation_k = EmptyOperator(task_id='nation_k') # 한국 영화 
     nation_f = EmptyOperator(task_id='nation_f') # 외국 영화 
+    
+    get_start = EmptyOperator(
+            task_id='get_start', 
+            trigger_rule='all_done'
+    )
+    get_end = EmptyOperator(task_id='get_end')
 
     start >> branch_op
-    start >> join_task >> get_start
+    start >> throw_err >> save_data
 
     branch_op >> rm_dir >> get_start
+    branch_op >> echo_task
     get_start >> [get_data, multi_y, multi_n, nation_k, nation_f]
-    branch_op >> echo_task >> get_start
-    branch_op >> get_start >> [get_data, multi_y, multi_n, nation_k, nation_f]
+    branch_op >> get_start 
+    get_start >> [get_data, multi_y, multi_n, nation_k, nation_f] >> get_end
     
-    [get_data, multi_y, multi_n, nation_k, nation_f] >> get_end 
     get_end >> save_data >> end
 
