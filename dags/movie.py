@@ -161,8 +161,8 @@ with DAG(
 
     
     rm_dir = BashOperator(
-        task_id="rm_dir",
-        bash_command="rm -rf ~/tmp/test_parquet/load_dt={{ ds_nodash }}"
+        task_id='rm_dir',
+        bash_command='rm -rf ~/tmp/test_parquet/load_dt={{ ds_nodash }}',
     )
 
 
