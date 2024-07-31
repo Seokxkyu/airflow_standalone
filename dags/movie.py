@@ -22,8 +22,11 @@ with DAG(
     default_args={
         'depends_on_past': False,
         'retries': 1,
-        'retry_delay': timedelta(seconds=3)
+        'retry_delay': timedelta(seconds=3),
     },
+
+    max_active_runs=1,
+    max_active_tasks=3,
     description='movie',
     schedule="10 2 * * *",
     start_date=datetime(2024, 7, 24),
@@ -57,6 +60,11 @@ with DAG(
         sum_df = g.agg({'audiCnt':'sum'}).reset_index()
         print(sum_df)
 
+    join_task = BashOperator(
+        task_id='join',
+        bash_command="exit 1",
+        trigger_rule='one_success'
+    )
 
     branch_op = BranchPythonOperator(
         task_id="branch_op",
@@ -91,21 +99,23 @@ with DAG(
         bash_command="echo 'task'"
     )
     
-    task_start = gen_emp('start')
-    task_end = gen_emp('end', 'all_done')
-    
-    join_task = BashOperator(
-        task_id='join',
-        bash_command="exit 1",
-        trigger_rule='one_success'
-    )
+    get_start = 
 
-    task_start >> branch_op
-    task_start >> join_task >> save_data
 
-    branch_op >> rm_dir >> get_data
+    start = EmptyOperator(task_id='start')
+    end = EmptyOperator(task_id='end')
+
+    multi_y = EmptyOperator(task_id='multi_y') # 다양성 영화 유무
+    multi_n = EmptyOperator(task_id='multi_n')  
+    nation_k = EmptyOperator(task_id='nation_k') # 한국 영화 
+    nation_f = EmptyOperator(task_id='nation_f') # 외국 영화 
+
+    start >> branch_op
+    start >> join_task >> save_data
+
+    branch_op >> rm_dir >> [get_data, multi_y, multi_n, nation_k, nation_f]
     branch_op >> echo_task >> save_data
-    branch_op >> get_data
+    branch_op >> [get_data, multi_y, multi_n, nation_k, nation_f]
 
-    get_data >> save_data >> task_end
+    [get_data, multi_y, multi_n, nation_k, nation_f] >> save_data >> end
 
