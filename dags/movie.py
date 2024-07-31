@@ -76,7 +76,7 @@ with DAG(
         python_callable=get_data,
         requirements=["git+https://github.com/Seokxkyu/mov.git@0.3/api"],
         system_site_packages=False,
-        # trigger_rule='all_done',
+        # trigger_rule='all_done'
         # venv_cache_path='/home/kyuseok00/tmp/air_venv/get_data'
     )
     
@@ -85,6 +85,7 @@ with DAG(
         python_callable=save_data,
         requirements=["git+https://github.com/Seokxkyu/mov.git@0.3/api"],
         system_site_packages=False,
+        trigger_rule="one_success"
     )
 
     rm_dir = BashOperator(
