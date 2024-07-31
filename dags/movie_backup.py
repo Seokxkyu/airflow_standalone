@@ -13,12 +13,8 @@ from airflow.operators.python import (
 
 from pprint import pprint
 
-def gen_emp(id, rule="all_success"):
-    op = EmptyOperator(task_id=id, trigger_rule=rule)
-    return op
-
 with DAG(
-    'movie',
+    'movie_backup',
     default_args={
         'depends_on_past': False,
         'retries': 1,
@@ -39,23 +35,13 @@ with DAG(
         from mov.api.call import save2df
         df = save2df(ds_nodash)
         print(df.head(5))
-    
-    def common_get_data(ds_nodash, url_param):
-    #def common_get_data(ds_nodash, {"MOVIE_4_KEY": "F"}):
+
+    # 지정한 load_dt의 데이터프레임 return하고 parquet로 변환, url_param 지정 
+    def fun_multi_y(ds_nodash):
         from mov.api.call import save2df
-        df = save2df(load_dt=ds_nodash, url_param=url_param)
-        
-        print(df[['movieCd', 'movieNm']].head(5))
-        
-        for k, v in url_param.items():
-            df[k] = v
-        
-        #p_cols = list(url_param.keys()).insert(0, 'load_dt')
-        p_cols = ['load_dt'] + list(url_param.keys())
-        df.to_parquet('~/tmp/test_parquet', 
-                partition_cols=p_cols
-                # partition_cols=['load_dt', 'movieKey']
-        )
+        p = {"multiMovieYn": "Y"}
+        df = save2df(load_dt=ds_nodash, url_param=p)
+        print(df.head(5))    
 
     def branch_func(ds_nodash):
         import os
@@ -70,16 +56,13 @@ with DAG(
     # 저장한 parquet 파일 불러와 데이터프레임으로 저장하고 openDt 기준으로 groupby 
     def save_data(ds_nodash):
         from mov.api.call import apply_type2df
-        
         df = apply_type2df(load_dt=ds_nodash)
-        
         print(df.head(10))
         print("*" * 30)
         print(df.dtypes)
         g = df.groupby('openDt')
         sum_df = g.agg({'audiCnt':'sum'}).reset_index()
         print(sum_df)
-    
 
     throw_err = BashOperator(
         task_id='throw_err',
@@ -109,55 +92,21 @@ with DAG(
         trigger_rule="one_success"
     )
     
-    # 다양성 영화 유무
+    # 다양성 유무
     multi_y = PythonVirtualenvOperator(
         task_id='multi_y',
-        python_callable=common_get_data,
-        system_site_packages=False,
+        python_callable=fun_multi_y,
         requirements=["git+https://github.com/Seokxkyu/mov.git@0.3/api"],
-        #op_args=[1,2,3,4],
-        op_kwargs={
-            "url_param": {"multiMovieYn": "Y"},
-        },
+        system_site_packages=False
     )
-
+    '''
     multi_n = PythonVirtualenvOperator(
         task_id='multi_n',
-        python_callable=common_get_data,
-        system_site_packages=False,
+        python_callable=fun_multi_n,
         requirements=["git+https://github.com/Seokxkyu/mov.git@0.3/api"],
-        #op_args=["{{ds_nodash}}", "{{ds}}"],
-        op_kwargs={
-            "url_param": {"multiMovieYn": "N"}
-            #"ds": "2024-11-11",
-            #"ds_nodash", "2024111"
-            #.
-            #.
-            #.
-        }
+        system_site_packages=False
     )
-
-    nation_k = PythonVirtualenvOperator(
-        task_id='nation_k',
-        python_callable=common_get_data,
-        system_site_packages=False,
-        requirements=["git+https://github.com/Seokxkyu/mov.git@0.3/api"],
-        #op_args=["{{ds_nodash}}", "{{ds}}"],
-        op_kwargs={
-            "url_param": {"repNationCd": "K"}
-        }
-    )
-
-    nation_f = PythonVirtualenvOperator(
-        task_id='nation_f',
-        python_callable=common_get_data,
-        system_site_packages=False,
-        requirements=["git+https://github.com/Seokxkyu/mov.git@0.3/api"],
-        #op_args=["{{ds_nodash}}", "{{ds}}"],
-        op_kwargs={
-            "url_param": {"repNationCd": "F"}
-        }
-    )
+    '''
 
     
     rm_dir = BashOperator(
@@ -175,9 +124,9 @@ with DAG(
     end = EmptyOperator(task_id='end')
 
     # multi_y = EmptyOperator(task_id='multi_y') 
-    # multi_n = EmptyOperator(task_id='multi_n')  
-    # nation_k = EmptyOperator(task_id='nation_k') # 한국 영화 
-    # nation_f = EmptyOperator(task_id='nation_f') # 외국 영화 
+    multi_n = EmptyOperator(task_id='multi_n')  
+    nation_k = EmptyOperator(task_id='nation_k') # 한국 영화 
+    nation_f = EmptyOperator(task_id='nation_f') # 외국 영화 
     
     get_start = EmptyOperator(
             task_id='get_start', 
