@@ -99,8 +99,7 @@ with DAG(
         bash_command="echo 'task'"
     )
     
-    get_start = 
-
+    get_start = EmptyOperator(task_id='get_started')
 
     start = EmptyOperator(task_id='start')
     end = EmptyOperator(task_id='end')
@@ -113,9 +112,10 @@ with DAG(
     start >> branch_op
     start >> join_task >> save_data
 
-    branch_op >> rm_dir >> [get_data, multi_y, multi_n, nation_k, nation_f]
+    branch_op >> rm_dir >> get_start
+    get_start >> [get_data, multi_y, multi_n, nation_k, nation_f]
     branch_op >> echo_task >> save_data
-    branch_op >> [get_data, multi_y, multi_n, nation_k, nation_f]
+    branch_op >> get_start >> [get_data, multi_y, multi_n, nation_k, nation_f]
 
     [get_data, multi_y, multi_n, nation_k, nation_f] >> save_data >> end
 
