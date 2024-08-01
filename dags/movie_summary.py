@@ -47,26 +47,28 @@ with DAG(
     apply_type = PythonVirtualenvOperator(
             task_id="apply_type",
             python_callable=app_type,
-            requirements=["git+https://github.com/Seokxkyu/mov.git@0.3/api"],
+            # requirements=["git+https://github.com/Seokxkyu/mov.git@0.3/api"],
             system_site_packages=False
     )
 
     merge_df = PythonVirtualenvOperator(
             task_id="merge_df",
             python_callable=merge_df,
-            requirements=["git+https://github.com/Seokxkyu/mov.git@0.3/api"],                          system_site_packages=False
+            # requirements=["git+https://github.com/Seokxkyu/mov.git@0.3/api"],
+            system_site_packages=False
     )
 
     de_dup = PythonVirtualenvOperator(
             task_id="del_dup",
             python_callable=delete_duplicate,
-            requirements=["git+https://github.com/Seokxkyu/mov.git@0.3/api"],                          system_site_packages=False
+            # requirements=["git+https://github.com/Seokxkyu/mov.git@0.3/api"], 
+            system_site_packages=False
     )
 
     summary_df = PythonVirtualenvOperator(
             task_id="summary_df",
             python_callable=summary_df,
-            requirements=["git+https://github.com/Seokxkyu/mov.git@0.3/api"],
+            # requirements=["git+https://github.com/Seokxkyu/mov.git@0.3/api"],
             system_site_packages=False
     )
 
