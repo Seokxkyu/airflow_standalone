@@ -38,6 +38,9 @@ with DAG(
     def delete_duplicate():
         return
 
+    def summary_df():
+        return
+    
     start = EmptyOperator(task_id='start')
     end = EmptyOperator(task_id='end')
 
@@ -58,6 +61,13 @@ with DAG(
             task_id="del_dup",
             python_callable=delete_duplicate,
             requirements=["git+https://github.com/Seokxkyu/mov.git@0.3/api"],                          system_site_packages=False
+    )
+
+    summary_df = PythonVirtualenvOperator(
+            task_id="summary_df",
+            python_callable=summary_df,
+            requirements=["git+https://github.com/Seokxkyu/mov.git@0.3/api"],
+            system_site_packages=False
     )
 
     start >> apply_type >> merge_df >> de_dup >> end
