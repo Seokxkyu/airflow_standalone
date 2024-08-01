@@ -54,7 +54,7 @@ with DAG(
             requirements=["git+https://github.com/Seokxkyu/mov.git@0.3/api"],                          system_site_packages=False
     )
 
-    de_dup = PythonVirutalenvOperator(
+    de_dup = PythonVirtualenvOperator(
             task_id="del_dup",
             python_callable=delete_duplicate,
             requirements=["git+https://github.com/Seokxkyu/mov.git@0.3/api"],                          system_site_packages=False
