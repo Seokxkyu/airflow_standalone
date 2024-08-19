@@ -31,9 +31,8 @@ with DAG(
 
     start=EmptyOpeator(task_id=start)
 
-    re_partition=PythonVirtualenvOperator(
+    re_partition=EmptyOperator(
             task_id='re_partition',
-            callable=
     )
 
     join_df=BashOperator(
