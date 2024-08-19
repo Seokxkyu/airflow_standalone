@@ -24,7 +24,8 @@ with DAG(
     max_active_tasks=3,
     description='movie',
     schedule="10 2 * * *",
-    start_date=datetime(2024, 7, 24),
+    start_date=datetime(2015, 1, 1),
+    end_date=datetime(2016,1,1),
     catchup=True,
     tags=['movies', 'dynamic', 'json'],
 ) as dag:
